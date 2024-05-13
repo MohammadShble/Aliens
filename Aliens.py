@@ -14,7 +14,7 @@ def rungame():
     pygame.display.set_caption("Aliens")
 
      # make a ship instance.
-    ship = Ship(screen)
+    ship = Ship(Game_settings ,screen)
 
     # Background color
     bg_color = (230, 230, 230)
@@ -22,7 +22,8 @@ def rungame():
         # the main loop of the game
     while True:
         # watch for keyboard and mouse events
-        gf.check_events() 
+        gf.check_events(ship) 
+        ship.update_ship()
         gf.update_screen(Game_settings, screen, ship)
 
 
