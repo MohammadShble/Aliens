@@ -24,7 +24,7 @@ class Ship():
         self.moving_right = False
         self.moving_left = False
 
-    def update_ship(self):
+    def update(self):
         # moving the ship based on the flags value
         # we update the ship's center value not the rect
         # the second condition of the 'if' limits the ship's renge
