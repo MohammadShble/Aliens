@@ -104,6 +104,32 @@ def create_fleet(Game_settings, screen, ship, aliens):
 
 
 
+
+def check_fleet_edges(Game_settings, aliens):
+    for alien in aliens.sprites():
+        if alien.check_edges():
+            change_fleet_direction(Game_settings, aliens)
+            break
+
+
+
+def change_fleet_direction(Game_settings, aliens):
+    # drop the entire fleet down and change the fleet's direction
+    for alien in aliens.sprites():
+        alien.rect.y += Game_settings.fleet_drop_speed
+    Game_settings.fleet_direction *= -1
+
+
+def update_aliens(Game_settings, aliens):
+    # check if the fleet is at an edge 
+    # the update the position of all the aliens
+    check_fleet_edges(Game_settings, aliens)
+    aliens.update()
+
+
+
+
+
 def update_screen(Game_settings, screen, ship, aliens, bullets):
     # update the screen and the images on it.
     # draw the screen during each pass through the loop
