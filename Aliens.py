@@ -23,7 +23,8 @@ def rungame():
 
     # create an instance to store the game's stats and create a scoreboard
     stats = GameStats(Game_settings)
-    scoreboard = Scoreboard(Game_settings, screen, stats)
+
+    ScoreBoard = Scoreboard(Game_settings, screen, stats)
 
      # make a ship instance, group of aliens and a group of bullets
     ship = Ship(Game_settings ,screen)
@@ -43,11 +44,12 @@ def rungame():
 
         if stats.game_active:
             ship.update()
-            gf.update_bullets(Game_settings, screen, ship, aliens, bullets)
+            gf.update_bullets(Game_settings, screen, stats,
+                                  ScoreBoard, ship, aliens, bullets)
             gf.update_aliens(Game_settings, stats, screen, ship, aliens, bullets)
             
         gf.update_screen(Game_settings, screen, stats, 
-                         ship, aliens, 
+                         ScoreBoard, ship, aliens, 
                          bullets, play_button)
 
 
