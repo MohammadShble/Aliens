@@ -80,11 +80,22 @@ def fire_bullet(Game_settings, screen, ship, bullets):
 
 
 
-def check_bullet_alien_collisions(Game_settings, screen,
-                                   ship, aliens, bullets):
+def check_bullet_alien_collisions(Game_settings, screen, stats,
+                                  ScoreBoard, ship, aliens, bullets):
     # respond to any bullet-alien collision 
     # remove the bullets and aliens that have collided
     collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
+
+    if collisions:
+        # this 'for' loop is for making sure that the player gets points
+        # for all the hits
+        # for example if two hits happend during the same pass through the loop
+        # or the bullet is wide enough to hit more than one alien at the same time
+        # the player will get points only for one hit
+        for aliens in collisions.values():
+            stats.score += Game_settings.alien_points * len(aliens)
+            
+        ScoreBoard.prep_score()
 
     if len(aliens) == 0:
         # destroy the existing bullets and create a new fleet of aliens
@@ -95,14 +106,16 @@ def check_bullet_alien_collisions(Game_settings, screen,
 
 
 
-def update_bullets(Game_settings, screen, ship, aliens, bullets):
+def update_bullets(Game_settings, screen, stats,
+                    ScoreBoard, ship, aliens, bullets):
     bullets.update()
     # get rid of old bullets (bullet that have disappeared)
     for bullet in bullets.copy():
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
 
-    check_bullet_alien_collisions(Game_settings, screen, ship, aliens, bullets)
+    check_bullet_alien_collisions(Game_settings, screen, stats,
+                                  ScoreBoard, ship, aliens, bullets)
 
 
     
@@ -176,6 +189,8 @@ def check_aliens_bottom(Game_settings, stats, screen, ship, aliens, bullets):
             ship_hit(Game_settings, stats, screen, ship, aliens, bullets)
             break
 
+
+
 def change_fleet_direction(Game_settings, aliens):
     # drop the entire fleet down and change the fleet's direction
     for alien in aliens.sprites():
@@ -223,8 +238,8 @@ def ship_hit(Game_settings, stats, screen, ship, aliens, bullets):
 
 
 def update_screen(Game_settings, screen, stats, 
-                         ship, aliens, 
-                         bullets, play_button):
+                        ScoreBoard, ship, aliens, 
+                        bullets, play_button):
     # update the screen and the images on it.
     # draw the screen during each pass through the loop
     screen.fill(Game_settings.backgroundcolor)
@@ -233,6 +248,9 @@ def update_screen(Game_settings, screen, stats,
         bullet.draw_bullet()
     ship.blitme()
     aliens.draw(screen)
+    
+    # draw the score info
+    ScoreBoard.show_score()
 
     # darw the play button if the game is inactivated
     if not stats.game_active:
