@@ -25,7 +25,7 @@ def check_keyup_events(event, ship):
         ship.moving_left = False
 
 
-def check_events(Game_settings, screen, stats,
+def check_events(Game_settings, screen, stats, ScoreBoard,
                   play_button, ship, aliens, 
                   bullets):
     # response to keypresses and mouse moves.
@@ -41,12 +41,12 @@ def check_events(Game_settings, screen, stats,
         
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            check_play_button(Game_settings, screen, stats, 
+            check_play_button(Game_settings, screen, stats, ScoreBoard,
                                 play_button, ship, aliens, 
                                 bullets, mouse_x, mouse_y)
 
 
-def check_play_button(Game_settings, screen, stats, 
+def check_play_button(Game_settings, screen, stats, ScoreBoard,
                       play_button, ship, aliens, 
                       bullets, mouse_x, mouse_y):
     # start a new game when the player presses play
@@ -64,6 +64,12 @@ def check_play_button(Game_settings, screen, stats,
             # reset the game stats
             stats.reset_stats()
             stats.game_active = True
+            
+            # reset scoreboard images
+            ScoreBoard.prep_score()
+            ScoreBoard.prep_high_score()
+            ScoreBoard.prep_level()
+            ScoreBoard.prep_ships()
 
             aliens.empty()
             bullets.empty()
@@ -94,14 +100,19 @@ def check_bullet_alien_collisions(Game_settings, screen, stats,
         # the player will get points only for one hit
         for aliens in collisions.values():
             stats.score += Game_settings.alien_points * len(aliens)
-            
-        ScoreBoard.prep_score()
+            ScoreBoard.prep_score()
+        check_high_score(stats, ScoreBoard)
 
     if len(aliens) == 0:
         # destroy the existing bullets and create a new fleet of aliens
         # speed up the game
         bullets.empty()
         Game_settings.increase_speed()
+
+        # increase level
+        stats.level += 1
+        ScoreBoard.prep_level()
+
         create_fleet(Game_settings, screen, ship, aliens)
 
 
@@ -180,15 +191,21 @@ def check_fleet_edges(Game_settings, aliens):
             break
 
 
-def check_aliens_bottom(Game_settings, stats, screen, ship, aliens, bullets):
+def check_aliens_bottom(Game_settings, screen, stats, ScoreBoard, ship, aliens, bullets):
     # check if any alien has reached the bottom of the screen
     screen_rect = screen.get_rect()
     for alien in aliens.sprites():
         if alien.rect.bottom >= screen_rect.bottom:
             # same situation as the ship got hit
-            ship_hit(Game_settings, stats, screen, ship, aliens, bullets)
+            ship_hit(Game_settings, screen, stats, ScoreBoard, ship, aliens, bullets)
             break
 
+
+def check_high_score(stats, ScoreBoard):
+    # this checks if there is a new high score
+    if stats.score > stats.high_score:
+        stats.high_score = stats.score
+        ScoreBoard.prep_high_score()
 
 
 def change_fleet_direction(Game_settings, aliens):
@@ -198,7 +215,7 @@ def change_fleet_direction(Game_settings, aliens):
     Game_settings.fleet_direction *= -1
 
 
-def update_aliens(Game_settings, stats, screen, ship, aliens, bullets):
+def update_aliens(Game_settings, screen, stats, ScoreBoard, ship, aliens, bullets):
     # check if the fleet is at an edge 
     # the update the position of all the aliens
     check_fleet_edges(Game_settings, aliens)
@@ -206,19 +223,22 @@ def update_aliens(Game_settings, stats, screen, ship, aliens, bullets):
 
     # to detect alien-ship collisions
     if pygame.sprite.spritecollideany(ship, aliens):
-        ship_hit(Game_settings, stats, screen, ship, aliens, bullets)
+        ship_hit(Game_settings, screen, stats, ScoreBoard, ship, aliens, bullets)
 
     # check if an alien has hit the bottom of the screen
-    check_aliens_bottom(Game_settings, stats, screen, ship, aliens, bullets)
+    check_aliens_bottom(Game_settings, screen, stats, ScoreBoard, ship, aliens, bullets)
 
 
 
-def ship_hit(Game_settings, stats, screen, ship, aliens, bullets):
+def ship_hit(Game_settings, screen, stats, ScoreBoard, ship, aliens, bullets):
     # responds to ship-alien collisions
     
     if stats.ships_left > 0:
         # decrease ships_left
         stats.ships_left -= 1
+
+        # update scoreboard
+        ScoreBoard.prep_ships()
 
         # delete all the aliens and bullets
         aliens.empty()
